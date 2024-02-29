@@ -17,3 +17,7 @@
 #     artifact-name: corne_left_with_logging
 #
 ---
+include:
+  - board: peacock_controller
+  - board: peacock_controller
+    shield: peacock_vik_module

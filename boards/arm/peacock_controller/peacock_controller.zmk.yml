@@ -1,0 +1,10 @@
+file_format: "1"
+id: peacock_controller
+name: Peacock trackpad controller
+type: board
+arch: arm
+features:
+  - keys
+outputs:
+  - usb
+url: https://github.com/george-norton/peacock/

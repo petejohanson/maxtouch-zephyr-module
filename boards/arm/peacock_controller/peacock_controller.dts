@@ -1,0 +1,105 @@
+/*
+ * Copyright (c) 2023 The ZMK Contributors
+ * SPDX-License-Identifier: MIT
+ */
+
+/dts-v1/;
+
+#include <rpi_pico/rp2040.dtsi>
+#include <dt-bindings/zmk/matrix_transform.h>
+#include <freq.h>
+#include "peacock_controller-pinctrl.dtsi"
+#include "vik_connector.dtsi"
+
+/ {
+
+    chosen {
+        zephyr,sram = &sram0;
+        zephyr,flash = &flash0;
+        zephyr,console = &cdc_acm_uart;
+        zephyr,shell-uart = &cdc_acm_uart;
+        zephyr,code-partition = &code_partition;
+        zmk,kscan = &kscan0;
+    };
+
+    xtal_clk: xtal-clk {
+        compatible = "fixed-clock";
+        clock-frequency = <12000000>;
+        #clock-cells = <0>;
+    };
+
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-direct";
+
+        input-gpios
+            = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 22 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 23 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 24 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 27 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 26 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            , <&gpio0 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>
+            ;
+    };
+
+
+    // TODO: Encoders
+    // TODO: RGB
+};
+
+&i2c0 {
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-names = "default";
+
+    clock-frequency = <I2C_BITRATE_FAST>;
+};
+
+&spi0 {
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-names = "default";
+
+    clock-frequency = <DT_FREQ_M(2)>;
+};
+
+&flash0 {
+    reg = <0x10000000 DT_SIZE_M(16)>;
+
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        /* Reserved memory for the second stage bootloader */
+        second_stage_bootloader: partition@0 {
+            reg = <0x00000000 0x100>;
+            read-only;
+        };
+
+        /*
+         * Usable flash. Starts at 0x100, after the bootloader. The partition
+         * size is 16MB minus the 0x100 bytes taken by the bootloader.
+         */
+        code_partition: partition@100 {
+            reg = <0x100 (DT_SIZE_M(16) - 0x100)>;
+            read-only;
+        };
+    };
+};
+
+
+&usbd {
+  status = "okay";
+  cdc_acm_uart: cdc_acm_uart {
+    compatible = "zephyr,cdc-acm-uart";
+  };
+};
+
+
+&gpio0 {
+    status = "okay";
+};
+
+&vreg {
+	regulator-always-on;
+	regulator-allowed-modes = <REGULATOR_RPI_PICO_MODE_NORMAL>;
+};

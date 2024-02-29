@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) 2024 Pete Johanson
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/pinctrl/rpi-pico-rp2040-pinctrl.h>
+
+&pinctrl {
+
+	i2c0_default: i2c0_default {
+		group1 {
+			pinmux = <I2C0_SDA_P16>, <I2C0_SCL_P21>;
+			input-enable;
+			input-schmitt-enable;
+		};
+	};
+
+	spi0_default: spi0_default {
+		group1 {
+			pinmux = <SPI0_TX_P3>;
+		};
+		group2 {
+			pinmux = <SPI0_RX_P0>;
+			input-enable;
+		};
+		group3 {
+			pinmux = <SPI0_SCK_P2>;
+		};
+	};
+};

@@ -1,0 +1,12 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+menuconfig INPUT_MICROCHIP_MAXTOUCH
+    bool "Microchip maXTouch trackpads"
+    default y
+    depends on GPIO
+    depends on I2C
+    depends on INPUT
+    depends on DT_HAS_MICROCHIP_MAXTOUCH_ENABLED
+    help
+      Enable driver for Microchip maXTouch trackpads

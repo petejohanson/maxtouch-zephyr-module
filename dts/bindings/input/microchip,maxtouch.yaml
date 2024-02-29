@@ -1,0 +1,30 @@
+description: |
+  Input driver for Microchip maxTouch devices
+
+include: ["i2c-device.yaml"]
+
+compatible: "microchip,maxtouch"
+
+properties:
+  chg-gpios:
+    type: phandle-array
+    description: CHG pin for the device
+    required: true
+  max-touch-points:
+    type: int
+    default: 5
+  swap-xy:
+    type: boolean
+  invert-x:
+    type: boolean
+  invert-y:
+    type: boolean
+  idle-acq-time-ms:
+    type: int
+    default: 32
+  active-acq-time-ms:
+    type: int
+    default: 10
+  active-to-idle-timeout-ms:
+    type: int
+    default: 50

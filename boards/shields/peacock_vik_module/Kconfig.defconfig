@@ -1,0 +1,6 @@
+# Copyright (c) 2019 Linaro Limited
+# SPDX-License-Identifier: Apache-2.0
+
+if SHIELD_PEACOCK_VIK_MODULE
+
+endif # SHIELD_PEACOCK_VIK_MODULE

@@ -1,0 +1,12 @@
+# Copyright (c) 2023 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+if BOARD_PEACOCK_CONTROLLER
+
+config ZMK_KEYBOARD_NAME
+    default "Peacock"
+
+config RP2_FLASH_W25Q080
+    default y
+
+endif # BOARD_PEACOCK_CONTROLLER
