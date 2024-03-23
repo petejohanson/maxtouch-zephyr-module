@@ -47,6 +47,14 @@ static int mxt_seq_write(const struct device *dev, const uint16_t addr, void *bu
     return i2c_transfer_dt(&config->bus, msg, 2);
 }
 
+static inline bool is_t100_report(const struct device *dev, int report_id) {
+    const struct mxt_config *config = dev->config;
+    struct mxt_data *data = dev->data;
+
+    return (report_id >= data->t100_first_report_id + 2 &&
+            report_id < data->t100_first_report_id + 2 + config->max_touch_points);
+}
+
 static void mxt_report_data(const struct device *dev) {
     const struct mxt_config *config = dev->config;
     struct mxt_data *data = dev->data;
@@ -73,8 +81,7 @@ static void mxt_report_data(const struct device *dev) {
             return;
         }
 
-        if (msg.report_id >= data->t100_first_report_id + 2 &&
-            msg.report_id < data->t100_first_report_id + 2 + config->max_touch_points) {
+        if (is_t100_report(dev, msg.report_id)) {
             uint8_t finger_idx = msg.report_id - data->t100_first_report_id - 2;
 
             enum t100_touch_event ev = msg.data[0] & 0xF;
@@ -85,12 +92,10 @@ static void mxt_report_data(const struct device *dev) {
             case DOWN:
             case MOVE:
             case UP:
-                LOG_DBG("Got a finger event for finger %d of type %d at %d/%d!", finger_idx, ev,
-                        x_pos, y_pos);
-                // TODO: Report tip/confidence as well?
-                input_report_abs(dev, INPUT_ABS_WHEEL, finger_idx, false, K_FOREVER);
+                input_report_abs(dev, INPUT_ABS_MT_SLOT, finger_idx, false, K_FOREVER);
                 input_report_abs(dev, INPUT_ABS_X, x_pos, false, K_FOREVER);
-                input_report_abs(dev, INPUT_ABS_Y, y_pos, true, K_FOREVER);
+                input_report_abs(dev, INPUT_ABS_Y, y_pos, false, K_FOREVER);
+                input_report_key(dev, INPUT_BTN_TOUCH, ev != UP, true, K_FOREVER);
                 break;
             default:
                 // All other events are ignored
@@ -244,12 +249,10 @@ static int mxt_load_config(const struct device *dev,
         t100_conf.ysize = information->matrix_y_size; // Make configurable as this depends on the
                                                       // sensor design.
                                                       //
-        t100_conf.xpitch =
-            MXT_SENSOR_WIDTH_MM /
-            information->matrix_x_size; // Pitch between X-Lines (5mm + 0.1mm * XPitch).
-        t100_conf.ypitch =
-            MXT_SENSOR_HEIGHT_MM /
-            information->matrix_y_size; // Pitch between Y-Lines (5mm + 0.1mm * YPitch).
+        t100_conf.xpitch = (MXT_SENSOR_WIDTH_MM * 10 / information->matrix_x_size) -
+                           50; // Pitch between X-Lines (5mm + 0.1mm * XPitch).
+        t100_conf.ypitch = (MXT_SENSOR_HEIGHT_MM * 10 / information->matrix_y_size) -
+                           50;          // Pitch between Y-Lines (5mm + 0.1mm * YPitch).
         t100_conf.gain = MXT_GAIN;      // Single transmit gain for mutual capacitance measurements
         t100_conf.dxgain = MXT_DX_GAIN; // Dual transmit gain for mutual capacitance
                                         // measurements (255 = auto calibrate)
