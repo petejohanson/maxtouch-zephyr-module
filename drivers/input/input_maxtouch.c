@@ -72,6 +72,8 @@ static void mxt_report_data(const struct device *dev) {
         return;
     }
 
+    uint16_t pending_fingers = 0;
+    bool last_touch_status = false;
     for (int i = 0; i < msg_count; i++) {
         struct mxt_message msg;
 
@@ -83,6 +85,7 @@ static void mxt_report_data(const struct device *dev) {
 
         if (is_t100_report(dev, msg.report_id)) {
             uint8_t finger_idx = msg.report_id - data->t100_first_report_id - 2;
+            bool pending_for_finger = (pending_fingers & BIT(finger_idx)) != 0;
 
             enum t100_touch_event ev = msg.data[0] & 0xF;
             uint16_t x_pos = msg.data[1] + (msg.data[2] << 8);
@@ -92,10 +95,16 @@ static void mxt_report_data(const struct device *dev) {
             case DOWN:
             case MOVE:
             case UP:
+                if (pending_for_finger) {
+                    input_report_key(dev, INPUT_BTN_TOUCH, last_touch_status, true, K_FOREVER);
+                    pending_fingers = 0;
+                }
+                WRITE_BIT(pending_fingers, finger_idx, 1);
+                last_touch_status = (ev != UP);
                 input_report_abs(dev, INPUT_ABS_MT_SLOT, finger_idx, false, K_FOREVER);
                 input_report_abs(dev, INPUT_ABS_X, x_pos, false, K_FOREVER);
                 input_report_abs(dev, INPUT_ABS_Y, y_pos, false, K_FOREVER);
-                input_report_key(dev, INPUT_BTN_TOUCH, ev != UP, true, K_FOREVER);
+                input_report_key(dev, INPUT_BTN_TOUCH, last_touch_status, false, K_FOREVER);
                 break;
             default:
                 // All other events are ignored
@@ -104,6 +113,10 @@ static void mxt_report_data(const struct device *dev) {
         } else {
             LOG_HEXDUMP_DBG(msg.data, 5, "message data");
         }
+    }
+
+    if (pending_fingers != 0) {
+        input_report_key(dev, INPUT_BTN_TOUCH, last_touch_status, true, K_FOREVER);
     }
 
     return;
