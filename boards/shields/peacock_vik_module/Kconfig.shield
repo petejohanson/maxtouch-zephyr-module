@@ -4,4 +4,5 @@
 config SHIELD_PEACOCK_VIK_MODULE
 	def_bool $(shields_list_contains,peacock_vik_module)
 	imply ZMK_MOUSE
-	imply I2C
+	imply ZMK_TRACKPAD
+	select I2C
