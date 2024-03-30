@@ -13,6 +13,7 @@
 		chg-gpios = <&vik_conn 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
 		swap-xy;
+		repeat-each-cycle;
 	};
 };
 

@@ -13,6 +13,9 @@ properties:
   max-touch-points:
     type: int
     default: 5
+  repeat-each-cycle:
+    type: boolean
+    description: Repeat events for any active touches each scan, even if no changes detected.
   swap-xy:
     type: boolean
   invert-x:

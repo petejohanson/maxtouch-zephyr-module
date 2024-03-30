@@ -33,6 +33,7 @@ struct mxt_config {
     const bool swap_xy;
     const bool invert_x;
     const bool invert_y;
+    const bool repeat_each_cycle;
 };
 
 #define MXT_REG_INFORMATION_BLOCK (0)

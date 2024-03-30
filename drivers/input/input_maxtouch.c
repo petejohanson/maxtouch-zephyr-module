@@ -95,6 +95,7 @@ static void mxt_report_data(const struct device *dev) {
             case DOWN:
             case MOVE:
             case UP:
+            case NO_EVENT:
                 if (pending_for_finger) {
                     input_report_key(dev, INPUT_BTN_TOUCH, last_touch_status, true, K_FOREVER);
                     pending_fingers = 0;
@@ -242,12 +243,19 @@ static int mxt_load_config(const struct device *dev,
             MXT_T100_CTRL_RPTEN | MXT_T100_CTRL_ENABLE; // Enable the t100 object, and enable
                                                         // message reporting for the t100 object.1`
         uint8_t cfg1 = 0;
-        if (config->swap_xy) {
-            cfg1 = cfg1 | MXT_T100_CFG_SWITCHXY;
+
+        if (config->repeat_each_cycle) {
+            cfg1 |= MXT_T100_CFG_RPTEACHCYCLE;
         }
+
+        if (config->swap_xy) {
+            cfg1 |= MXT_T100_CFG_SWITCHXY;
+        }
+
         if (config->invert_x) {
             cfg1 |= MXT_T100_CFG_INVERTX;
         }
+
         if (config->invert_y) {
             cfg1 |= MXT_T100_CFG_INVERTY;
         }
@@ -357,6 +365,7 @@ static int mxt_init(const struct device *dev) {
         .idle_acq_time = DT_INST_PROP_OR(n, idle_acq_time_ms, 32),                                 \
         .active_acq_time = DT_INST_PROP_OR(n, active_acq_time_ms, 10),                             \
         .active_to_idle_timeout = DT_INST_PROP_OR(n, active_to_idle_timeout_ms, 50),               \
+        .repeat_each_cycle = DT_INST_PROP(n, repeat_each_cycle),                                   \
         .swap_xy = DT_INST_PROP(n, swap_xy),                                                       \
         .invert_x = DT_INST_PROP(n, invert_x),                                                     \
         .invert_y = DT_INST_PROP(n, invert_y),                                                     \
